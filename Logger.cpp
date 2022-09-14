@@ -10,10 +10,9 @@ Logger::Logger(const std::string &name, int vLevel, bool showTime, const std::st
     this -> verboseLevel = vLevel;
     this -> output = output;
     this -> allowTimeStamping = showTime;
-    this -> messageErrorLevel = INFORMATION; //Par défaut on récup tous les messages d'err
 }
 
-std::string Logger::getStrErrorLevel(errorLevel error)  {
+std::string Logger::getStrErrorLevel(errorLevel error) {
     switch (error) {
         case INFORMATION:
             return "INFORMATION";
@@ -26,46 +25,51 @@ std::string Logger::getStrErrorLevel(errorLevel error)  {
     }
 }
 
+//F° de log
+void Logger::log(const std::string &message, int errorVal) const {
+    if (isAnError(errorVal)){
+        if (wantedLevelOfError(errorVal)) {
+            std::string currentTime;
+            if (allowTimeStamping) {
+                std::time_t res = time(nullptr);
+                currentTime = std::asctime(std::localtime(&res));
+                currentTime.erase(currentTime.size() - 1); //Faire sauter le \n
+            }
+            if (Logger::output == ("std::cout")) {
+                //check ostream
+                std::cout << currentTime << " | [" << getStrErrorLevel((errorLevel)errorVal) << "] | " << message + "\n";
+            } else if (Logger::output == ("std::cerr")) {
+                //check ostream aussi
+                std::cerr << currentTime << " | [" << getStrErrorLevel((errorLevel)errorVal)  << "] | " << message + "\n";
+            } else {
+                // Check fstream !!!!
+                FILE *fp = std::fopen(Logger::output.c_str(), "a+");
+                if (!fp)
+                    std::perror("Couldn't create file");
+                std::string outputMsg = currentTime + " | [" + getStrErrorLevel((errorLevel)errorVal)  + "] | " + message + "\n";
+                size_t fw = fwrite(outputMsg.c_str(), sizeof(char), outputMsg.size(), fp);
+                printf("%zu elements written out of %zu requested\n", fw, outputMsg.size());
+                fclose(fp);
+            }
+        }
+
+    } else
+        std::cerr << "this isn't a correct error type, it goes from 0 to 2" << std::endl;
+}
+
 bool Logger::isAnError(int errorVal) {
     return (errorVal>= 0 && errorVal < nbErrors);
 }
 
-bool Logger::wantedLevelOfError(int errorVal) {
+bool Logger::wantedLevelOfError(int errorVal) const {
     return (errorVal >= Logger::verboseLevel);
 }
-//F° de log
-void Logger::log(const std::string &message, int errorVal) {
-    if (isAnError(errorVal) && wantedLevelOfError(errorVal)){
-        std::string currentTime;
-        Logger::messageErrorLevel = (errorLevel)errorVal;
-        Logger::errorMessage = message;
-        if (allowTimeStamping) {
-            std::time_t res = std::time(nullptr);
-//            currentTime = std::asctime(std::localtime(&res));
-            currentTime = std::chrono::system_clock::now()
-        }
-        if (Logger::output == ("std::cout")) {
-            //check ostream
-            //std::cout << currentTime << getStrErrorLevel(messageErrorLevel) << " | " << errorMessage;
-            std::cout << currentTime << "Test";
-        }
-        else if(Logger::output == ("std::cerr")) {
-            //check ostream aussi
-            std::cerr << currentTime << getStrErrorLevel(messageErrorLevel) << " | " << errorMessage;
-        }
-        else {
-            // Check fstream !!!!
-//            const char* file = Logger::output;
-            FILE* fp = std::fopen(Logger::output.c_str(),"w+");
-            if (!fp)
-                std::perror("Couldn't create/open file");
-            std::string outputMsg = currentTime + getStrErrorLevel(messageErrorLevel) + " | " + errorMessage;
-            size_t fw = fwrite(outputMsg.c_str(),sizeof (char),outputMsg.size(),fp);
-            printf("%zu elements written out of %llu requested",fw,outputMsg.size());
-            fclose(fp);
-        }
-    } else
-        std::cerr << "this isn't a correct error type, it goes from 0 to 2";
+
+void Logger::levelsOfErrors() {
+    std::cout << "There's " << Logger::nbErrors << " levels of error :" << std::endl;
+    for(int i = 0 ; i < Logger::nbErrors ; i++) {
+        std::cout << "["<<i<<"] -- "<< Logger::getStrErrorLevel(Logger::errorLevel(i)) << std::endl;
+    }
 }
 
 

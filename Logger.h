@@ -8,23 +8,21 @@
 class Logger {
 public:
     enum errorLevel { INFORMATION = 0, WARNING, CRITICAL };
-    static constexpr int nbErrors = 3 ;
+    static const int nbErrors = 3 ;
     std::string loggerName; // Pas mutable
     int verboseLevel; //Pas mutable
     std::string output; //Pas mutable
-    std::string errorMessage; //Mutable
-    errorLevel messageErrorLevel; //Mutabl
     bool allowTimeStamping; //Pas d'horodatage a la volée
     //
 
     Logger(const std::string& name, int vLevel, bool showTime, const std::string& output);
 
-    std::string getStrErrorLevel(errorLevel error);
-    bool isAnError(int errorVal);
-    bool wantedLevelOfError(int errorVal);
-    void log(const std::string &message, int errorVal);
+    static std::string getStrErrorLevel(errorLevel error) ;
+    void log(const std::string &message, int errorVal) const;
 
-
+    static bool isAnError(int errorVal) ;
+    bool wantedLevelOfError(int errorVal) const;
+    static void levelsOfErrors() ;
 };
 
 #endif //LOGGER_LOGGER_H
