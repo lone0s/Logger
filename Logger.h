@@ -6,15 +6,16 @@
 // Fichier d'entete tjr libre pdt que source devient biblio & exec
 
 class Logger {
-public:
+private:
     enum errorLevel { INFORMATION = 0, WARNING, CRITICAL };
     static const int nbErrors = 3 ;
-    std::string loggerName; // Pas mutable
-    int verboseLevel; //Pas mutable
-    std::string output; //Pas mutable
-    bool allowTimeStamping; //Pas d'horodatage a la volée
-    //
 
+    std::string loggerName;
+    int verboseLevel;
+    std::string output;
+    bool allowTimeStamping;
+
+public:
     Logger(const std::string& name, int vLevel, bool showTime, const std::string& output);
 
     static std::string getStrErrorLevel(errorLevel error) ;
